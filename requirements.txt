@@ -1,0 +1,4 @@
+# Modules needed to run the script
+- pySerial
+- threading
+- time

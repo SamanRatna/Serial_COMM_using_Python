@@ -2,12 +2,7 @@ import threading
 import serial
 import serial.tools.list_ports as availablePorts
 
-sender_port = 'COM1'        # PORT number to send data
-receiver_port = 'COM2'      # PORT number to receive data
 baud_rate = 9600            # rate of data trandfer
-
-SENDER_TAG = sender_port + ' ======>'
-RECEIVER_TAG = receiver_port + ' ======>'
 
 
 def COM_sender():
@@ -20,14 +15,8 @@ def COM_sender():
         if ser_send.is_open:
 
             print(f"Connected to {ser_send.name}. Ready to send data")
-
-            ser_send.write(b'Hello there\n')
-
-            # # Read a line of data from the receiving port
-            # received_data = ser_send.readline()
-
-            # # Print the received data
-            # print(f"Received: {received_data.decode('utf-8')}", end='')
+            print("Sending from " + sender_port)
+            ser_send.write(b'Sending Hello from Sender\n')
 
             # Close the sending port
             ser_send.close()
@@ -38,7 +27,7 @@ def COM_sender():
 
 
 def COM_receiver():
-    print(RECEIVER_TAG, "receiver thread is alive")
+    print(RECEIVER_TAG, "Receiver thread is live")
 
     try:
         # Open a connection
@@ -49,23 +38,24 @@ def COM_receiver():
 
             try:
                 while True:
-                    # Read a line of data from the receiving port
-                    received_data = ser_receive.readline()
 
-                    # Print the received data
-                    print(f"Received: {received_data.decode('utf-8')}", end='')
-                    # ser_receive.write(b'Data received successfully\n')
-                    # Close the receiving port when done
-                    ser_receive.close()
-                    print("Serial port for receiving closed.")
+                    if (ser_receive.is_open):
+                        # Read a line of data from the receiving port
+                        received_data = ser_receive.readline()
+
+                        # Print the received data
+                        print(
+                            f"Received at receiver: {received_data.decode('utf-8')}", end='')
+                        # Close the receiving port when done
+                        ser_receive.close()
+                        print("Serial port for receiving closed.")
+
+                    else:
+                        return
 
             except KeyboardInterrupt:
                 # Handle Ctrl+C to exit the loop gracefully
                 print("Serial data receiving stopped.")
-
-            # Close the receiving port when done
-            ser_receive.close()
-            print("Serial port for receiving closed.")
 
     except serial.SerialException as e:
         print(f"Error: {e}")
@@ -88,6 +78,8 @@ def startCommunicationThread():
 
 if __name__ == "__main__":
 
+    ports = []
+
     # Get a list of available serial ports
     available_ports = list(availablePorts.comports())
 
@@ -99,5 +91,14 @@ if __name__ == "__main__":
     else:
         print("Available serial ports:")
         for port in available_ports:
-            print(f"- {port.device}: {port.description}")
+            # print(f"- {port.device}: {port.description}")
+            ports.append(port.device)
+
+        sender_port = ports[0]        # PORT number to send data
+        receiver_port = ports[1]      # PORT number to receive data
+        print(port[1])
+
+        SENDER_TAG = sender_port + ' ======>'
+        RECEIVER_TAG = receiver_port + ' ======>'
+
         startCommunicationThread()
