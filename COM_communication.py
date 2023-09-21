@@ -5,6 +5,7 @@ import serial.tools.list_ports as availablePorts
 baud_rate = 9600            # rate of data trandfer
 
 
+# Thread that handles sender COM
 def COM_sender():
     print(SENDER_TAG, "Sender thread is live")
 
@@ -14,18 +15,19 @@ def COM_sender():
 
         if ser_send.is_open:
 
-            print(f"Connected to {ser_send.name}. Ready to send data")
+            print(f"\nConnected to {ser_send.name}. Ready to send data")
             print("Sending from " + sender_port)
             ser_send.write(b'Sending Hello from Sender\n')
 
             # Close the sending port
             ser_send.close()
-            print("Serial port for sending closed.")
+            print("\nSerial port for sending closed.")
 
     except serial.SerialException as e:
         print(f"Error: {e}")
 
 
+# Thread that handles receiver COM
 def COM_receiver():
     print(RECEIVER_TAG, "Receiver thread is live")
 
@@ -34,7 +36,7 @@ def COM_receiver():
         ser_receive = serial.Serial(receiver_port, baud_rate)
 
         if ser_receive.is_open:
-            print(f"Connected to {ser_receive.name}. Ready to receive")
+            print(f"\nConnected to {ser_receive.name}. Ready to receive")
 
             try:
                 while True:
@@ -48,7 +50,7 @@ def COM_receiver():
                             f"Received at receiver: {received_data.decode('utf-8')}", end='')
                         # Close the receiving port when done
                         ser_receive.close()
-                        print("Serial port for receiving closed.")
+                        print("\nSerial port for receiving closed.")
 
                     else:
                         return
@@ -61,6 +63,7 @@ def COM_receiver():
         print(f"Error: {e}")
 
 
+# Main Thread
 def startCommunicationThread():
 
     try:
@@ -89,16 +92,16 @@ if __name__ == "__main__":
 
     # If Ports are available then, print all of them with their status and start the communication threads
     else:
-        print("Available serial ports:")
+        print("\n***** Available serial ports: *****")
         for port in available_ports:
-            # print(f"- {port.device}: {port.description}")
+            print(f"- {port.device}: {port.description}")
             ports.append(port.device)
 
         sender_port = ports[0]        # PORT number to send data
         receiver_port = ports[1]      # PORT number to receive data
-        print(port[1])
 
         SENDER_TAG = sender_port + ' ======>'
         RECEIVER_TAG = receiver_port + ' ======>'
+        print("")
 
         startCommunicationThread()
